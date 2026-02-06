@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RadioAjay - Live Radio</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .player-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .station-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .station-logo {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+
+        .station-name {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status-online {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online .status-dot {
+            background: #22c55e;
+        }
+
+        .status-offline .status-dot {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .now-playing {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            min-height: 100px;
+        }
+
+        .now-playing-label {
+            font-size: 0.85em;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .track-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .track-artist {
+            font-size: 1.1em;
+            color: #64748b;
+        }
+
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .play-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 2em;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .play-button:active {
+            transform: scale(0.95);
+        }
+
+        .play-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .volume-control {
+            flex: 1;
+        }
+
+        .volume-label {
+            font-size: 0.85em;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer-text {
+            color: #64748b;
+            font-size: 0.9em;
+        }
+
+        .footer-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .player-container {
+                padding: 30px 20px;
+            }
+
+            .station-logo {
+                font-size: 3em;
+            }
+
+            .station-name {
+                font-size: 1.5em;
+            }
+
+            .play-button {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="station-header">
+            <div class="station-logo">🎵</div>
+            <div class="station-name">RadioAjay</div>
+            <div class="status-badge status-offline" id="statusBadge">
+                <span class="status-dot"></span>
+                <span id="statusText">Offline</span>
+            </div>
+        </div>
+
+        <div class="now-playing">
+            <div class="now-playing-label">Now Playing</div>
+            <div class="track-title" id="trackTitle">No track playing</div>
+            <div class="track-artist" id="trackArtist"></div>
+            <div class="mode-badge" id="modeBadge" style="display: none;">Playlist</div>
+        </div>
+
+        <div class="controls">
+            <button class="play-button" id="playButton" disabled>
+                ▶️
+            </button>
+            <div class="volume-control">
+                <div class="volume-label">Volume</div>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+            </div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="footer">
+            <p class="footer-text">
+                Powered by RadioAjay | 
+                <a href="/admin" class="footer-link">Admin Panel</a>
+            </p>
+        </div>
+    </div>
+
+    <audio id="audioPlayer" preload="none"></audio>
+
+    <script>
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playButton = document.getElementById('playButton');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const statusBadge = document.getElementById('statusBadge');
+        const statusText = document.getElementById('statusText');
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
+        const modeBadge = document.getElementById('modeBadge');
+        const errorMessage = document.getElementById('errorMessage');
+
+        let hls = null;
+        let isPlaying = false;
+        let nowPlayingInterval = null;
+
+        // Initialize HLS
+        function initPlayer() {
+            const streamUrl = '/stream/radioajay.m3u8';
+
+            if (Hls.isSupported()) {
+                hls = new Hls({
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 90
+                });
+
+                hls.loadSource(streamUrl);
+                hls.attachMedia(audioPlayer);
+
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    console.log('HLS manifest loaded');
+                    playButton.disabled = false;
+                });
+
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    console.error('HLS error:', data);
+                    if (data.fatal) {
+                        showError('Stream connection failed. Please try again.');
+                        playButton.disabled = true;
+                    }
+                });
+            } else if (audioPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                // Native HLS support (Safari)
+                audioPlayer.src = streamUrl;
+                playButton.disabled = false;
+            } else {
+                showError('Your browser does not support HLS playback.');
+            }
+        }
+
+        // Play/Pause control
+        playButton.addEventListener('click', () => {
+            if (isPlaying) {
+                audioPlayer.pause();
+                playButton.textContent = '▶️';
+                isPlaying = false;
+            } else {
+                audioPlayer.play().then(() => {
+                    playButton.textContent = '⏸️';
+                    isPlaying = true;
+                }).catch(err => {
+                    console.error('Playback error:', err);
+                    showError('Failed to start playback. Please try again.');
+                });
+            }
+        });
+
+        // Volume control
+        volumeSlider.addEventListener('input', (e) => {
+            audioPlayer.volume = e.target.value / 100;
+        });
+
+        // Set initial volume
+        audioPlayer.volume = 0.7;
+
+        // Fetch now playing
+        async function updateNowPlaying() {
+            try {
+                const response = await fetch('/api/now-playing');
+                const data = await response.json();
+
+                // Update status
+                if (data.isOnline) {
+                    statusBadge.className = 'status-badge status-online';
+                    statusText.textContent = 'Live';
+                    playButton.disabled = false;
+                } else {
+                    statusBadge.className = 'status-badge status-offline';
+                    statusText.textContent = 'Offline';
+                    playButton.disabled = true;
+                }
+
+                // Update now playing
+                if (data.track) {
+                    trackTitle.textContent = data.track.title;
+                    trackArtist.textContent = data.track.artist;
+                    modeBadge.textContent = data.mode === 'live' ? 'Live' : 'Playlist';
+                    modeBadge.style.display = 'inline-block';
+                } else {
+                    trackTitle.textContent = 'No track playing';
+                    trackArtist.textContent = '';
+                    modeBadge.style.display = 'none';
+                }
+
+                hideError();
+            } catch (err) {
+                console.error('Failed to fetch now playing:', err);
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        // Initialize
+        initPlayer();
+        updateNowPlaying();
+
+        // Poll now playing every 10 seconds
+        nowPlayingInterval = setInterval(updateNowPlaying, 10000);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (hls) {
+                hls.destroy();
+            }
+            if (nowPlayingInterval) {
+                clearInterval(nowPlayingInterval);
+            }
+        });
+    </script>
+</body>
+</html>

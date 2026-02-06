@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment
+.env
+
+# Data directories
+data/media/*
+data/hls/*
+data/db/*
+
+# Keep directory structure
+!data/media/.gitkeep
+!data/hls/.gitkeep
+!data/db/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

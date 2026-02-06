@@ -1,0 +1,16 @@
+{
+  "name": "radioajay",
+  "version": "1.0.0",
+  "description": "Personal Radio Hosting Application",
+  "scripts": {
+    "start": "./start.sh",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:restart": "docker-compose restart",
+    "docker:build": "docker-compose up -d --build"
+  },
+  "keywords": ["radio", "streaming", "hls", "broadcasting"],
+  "author": "",
+  "license": "MIT"
+}
