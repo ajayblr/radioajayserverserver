@@ -115,9 +115,9 @@ class StreamController {
       '-ac', '2', // Stereo
       '-err_detect', 'ignore_err', // Ignore minor errors
       '-f', 'hls',
-      '-hls_time', this.config.HLS_SEGMENT_DURATION.toString(),
-      '-hls_list_size', this.config.HLS_PLAYLIST_SIZE.toString(),
-      '-hls_flags', 'delete_segments+append_list',
+      '-hls_time', '6', // Longer segments = less gaps
+      '-hls_list_size', '10', // Keep more segments
+      '-hls_flags', 'delete_segments+append_list+omit_endlist',
       '-hls_segment_filename', path.join(this.config.HLS_DIR, 'segment_%03d.ts'),
       hlsPath
     ];
@@ -192,9 +192,9 @@ class StreamController {
       '-b:a', '128k',
       '-ar', '44100',
       '-f', 'hls',
-      '-hls_time', this.config.HLS_SEGMENT_DURATION.toString(),
-      '-hls_list_size', this.config.HLS_PLAYLIST_SIZE.toString(),
-      '-hls_flags', 'delete_segments+append_list',
+      '-hls_time', '6',
+      '-hls_list_size', '10',
+      '-hls_flags', 'delete_segments+append_list+omit_endlist',
       '-hls_segment_filename', path.join(this.config.HLS_DIR, 'segment_%03d.ts'),
       hlsPath
     ];
