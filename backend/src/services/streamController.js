@@ -105,11 +105,15 @@ class StreamController {
     const hlsPath = path.join(this.config.HLS_DIR, 'radioajay.m3u8');
     
     const args = [
+      '-loglevel', 'error', // Only show errors
       '-re', // Read input at native frame rate
       '-i', inputPath,
+      '-vn', // No video
       '-c:a', 'aac',
       '-b:a', '128k',
       '-ar', '44100',
+      '-ac', '2', // Stereo
+      '-err_detect', 'ignore_err', // Ignore minor errors
       '-f', 'hls',
       '-hls_time', this.config.HLS_SEGMENT_DURATION.toString(),
       '-hls_list_size', this.config.HLS_PLAYLIST_SIZE.toString(),
