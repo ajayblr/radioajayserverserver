@@ -519,7 +519,10 @@
 
             <!-- Library -->
             <div class="section">
-                <div class="section-title">Library</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div class="section-title" style="margin-bottom: 0;">Library</div>
+                    <button class="btn btn-danger btn-small" onclick="deleteAllLibrary()" style="padding: 8px 16px;">🗑️ Delete All Library</button>
+                </div>
                 <div class="track-list" id="libraryList">
                     <div class="empty-state">
                         <div class="empty-state-icon">🎵</div>
@@ -530,7 +533,10 @@
 
             <!-- Playlist -->
             <div class="section">
-                <div class="section-title">Playlist</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div class="section-title" style="margin-bottom: 0;">Playlist</div>
+                    <button class="btn btn-danger btn-small" onclick="clearPlaylist()" style="padding: 8px 16px;">🗑️ Clear Playlist</button>
+                </div>
                 <div class="checkbox-group">
                     <input type="checkbox" id="shuffleCheckbox" onchange="savePlaylist()">
                     <label for="shuffleCheckbox" style="cursor: pointer; font-weight: 600;">🔀 Shuffle</label>
@@ -735,6 +741,48 @@
                 console.error('Delete track error:', err);
                 alert('Failed to delete track');
             }
+        }
+
+        async function deleteAllLibrary() {
+            if (!confirm('⚠️ WARNING: This will delete ALL tracks from your library and playlist! This cannot be undone. Are you absolutely sure?')) {
+                return;
+            }
+
+            if (!confirm('This is your final warning! ALL ' + libraryTracks.length + ' tracks will be permanently deleted. Continue?')) {
+                return;
+            }
+
+            try {
+                const deletePromises = libraryTracks.map(track => 
+                    fetch(`/api/admin/tracks/${track.id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    })
+                );
+
+                await Promise.all(deletePromises);
+
+                libraryTracks = [];
+                playlistTracks = [];
+                renderLibrary();
+                renderPlaylist();
+                await savePlaylist();
+                showSuccess('All tracks deleted from library');
+            } catch (err) {
+                console.error('Delete all error:', err);
+                alert('Failed to delete all tracks');
+            }
+        }
+
+        function clearPlaylist() {
+            if (!confirm('Are you sure you want to clear the entire playlist? Tracks will remain in your library.')) {
+                return;
+            }
+
+            playlistTracks = [];
+            renderPlaylist();
+            savePlaylist();
+            showSuccess('Playlist cleared');
         }
 
         function removeFromPlaylist(index) {
