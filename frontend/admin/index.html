@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RadioAjay - Admin Panel</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <style>
         * {
             margin: 0;
@@ -422,8 +423,9 @@
     <div class="login-container" id="loginContainer">
         <div class="login-box">
             <div class="login-header">
-                <div class="login-logo">🎵</div>
-                <div class="login-title">RadioAjay</div>
+                <div class="login-logo">
+                    <img src="../public/logo.png" alt="RadioAjay" style="max-width: 250px; height: auto; margin-bottom: 10px;">
+                </div>
                 <div class="login-subtitle">Admin Panel</div>
             </div>
             <div class="error-msg" id="loginError"></div>
@@ -440,7 +442,10 @@
     <!-- Admin Panel -->
     <div class="admin-container" id="adminContainer">
         <div class="header">
-            <div class="header-title">🎵 RadioAjay Admin</div>
+            <div class="header-title">
+                <img src="../public/logo.png" alt="RadioAjay" style="height: 40px; vertical-align: middle;">
+                <span style="margin-left: 10px;">Admin</span>
+            </div>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
 
