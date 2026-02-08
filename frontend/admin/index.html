@@ -424,7 +424,7 @@
         <div class="login-box">
             <div class="login-header">
                 <div class="login-logo">
-                    <img src="../public/logo.png" alt="RadioAjay" style="max-width: 280px; width: 100%; height: auto; display: block; margin: 0 auto 20px;">
+                    <img src="logo.png" alt="RadioAjay" style="max-width: 280px; width: 100%; height: auto; display: block; margin: 0 auto 20px;">
                 </div>
             </div>
             <div class="error-msg" id="loginError"></div>
@@ -442,7 +442,7 @@
     <div class="admin-container" id="adminContainer">
         <div class="header">
             <div class="header-title">
-                <img src="../public/logo.png" alt="RadioAjay" style="height: 45px; vertical-align: middle;">
+                <img src="logo.png" alt="RadioAjay" style="height: 45px; vertical-align: middle;">
             </div>
             <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
@@ -519,7 +519,7 @@
             <div class="section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div class="section-title" style="margin-bottom: 0;">Library</div>
-                    <button class="btn btn-danger btn-small" onclick="deleteAllLibrary()" style="padding: 8px 16px;">🗑️ Delete All Library</button>
+                    <button class="btn btn-danger" onclick="deleteAllLibrary()" style="padding: 6px 12px; font-size: 0.85em;">🗑️ Delete All</button>
                 </div>
                 <div class="track-list" id="libraryList">
                     <div class="empty-state">
@@ -533,7 +533,7 @@
             <div class="section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <div class="section-title" style="margin-bottom: 0;">Playlist</div>
-                    <button class="btn btn-danger btn-small" onclick="clearPlaylist()" style="padding: 8px 16px;">🗑️ Clear Playlist</button>
+                    <button class="btn btn-danger" onclick="clearPlaylist()" style="padding: 6px 12px; font-size: 0.85em;">🗑️ Clear All</button>
                 </div>
                 <div class="checkbox-group">
                     <input type="checkbox" id="shuffleCheckbox" onchange="savePlaylist()">
