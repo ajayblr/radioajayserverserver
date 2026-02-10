@@ -15,8 +15,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
-            color: #ffffff;
+            background: #ffffff;
+            color: #1f2937;
             overflow-x: hidden;
         }
 
@@ -32,17 +32,17 @@
 
         /* Header */
         .header {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
             padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .logo-img {
-            height: 50px;
+            height: 60px;
         }
 
         .header-nav {
@@ -51,7 +51,7 @@
         }
 
         .nav-link {
-            color: #ffffff;
+            color: #374151;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
@@ -59,7 +59,7 @@
         }
 
         .nav-link:hover {
-            color: #fbbf24;
+            color: #dc2626;
         }
 
         /* Main content */
@@ -80,19 +80,18 @@
         }
 
         .hero-banner {
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(239, 68, 68, 0.2) 100%);
+            background: linear-gradient(135deg, #fee2e2 0%, #fef3c7 100%);
             border-radius: 20px;
             padding: 40px;
             text-align: center;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid #fca5a5;
         }
 
         .hero-title {
             font-size: 3em;
             font-weight: bold;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -100,17 +99,16 @@
 
         .hero-subtitle {
             font-size: 1.3em;
-            opacity: 0.9;
+            color: #6b7280;
         }
 
         /* Player Card */
         .player-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
+            background: #ffffff;
             border-radius: 20px;
             padding: 40px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
         }
 
         .status-indicator {
@@ -154,12 +152,12 @@
             font-size: 1.8em;
             font-weight: bold;
             margin-bottom: 8px;
-            color: #fbbf24;
+            color: #dc2626;
         }
 
         .track-artist {
             font-size: 1.2em;
-            opacity: 0.8;
+            color: #6b7280;
         }
 
         .mode-badge {
@@ -257,11 +255,11 @@
         }
 
         .upcoming-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
+            background: #ffffff;
             border-radius: 20px;
             padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             max-height: calc(100vh - 180px);
             overflow-y: auto;
         }
@@ -282,22 +280,24 @@
         }
 
         .upcoming-item {
-            background: rgba(255, 255, 255, 0.05);
+            background: #f9fafb;
             padding: 12px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             gap: 12px;
             transition: background 0.2s;
+            border: 1px solid #e5e7eb;
         }
 
         .upcoming-item:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f3f4f6;
+            border-color: #dc2626;
         }
 
         .track-number {
-            background: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
+            background: #fee2e2;
+            color: #dc2626;
             width: 28px;
             height: 28px;
             border-radius: 50%;
@@ -320,11 +320,12 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: #111827;
         }
 
         .track-artist-small {
             font-size: 12px;
-            opacity: 0.7;
+            color: #6b7280;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -332,19 +333,20 @@
 
         /* Footer */
         .footer {
-            background: rgba(0, 0, 0, 0.3);
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
             padding: 30px 40px;
             text-align: center;
             margin-top: 40px;
         }
 
         .footer-text {
-            opacity: 0.7;
+            color: #6b7280;
             font-size: 14px;
         }
 
         .footer-link {
-            color: #fbbf24;
+            color: #dc2626;
             text-decoration: none;
             margin: 0 10px;
         }
@@ -771,7 +773,8 @@
                 const response = await fetch('/api/now-playing');
                 const data = await response.json();
 
-                if (data.station.isOnline) {
+                // Fix: Backend returns 'isOnline' not 'station.isOnline'
+                if (data.isOnline) {
                     desktopStatusText.textContent = 'Live';
                     mobileStatusText.textContent = 'Live';
                     document.getElementById('desktopStatus').style.background = 'rgba(34, 197, 94, 0.2)';
@@ -783,16 +786,17 @@
                     document.getElementById('mobileStatus').style.background = 'rgba(239, 68, 68, 0.2)';
                 }
 
-                if (data.currentTrack) {
-                    const title = data.currentTrack.title || 'Unknown Track';
-                    const artist = data.currentTrack.artist || 'Unknown Artist';
+                // Fix: Backend returns 'track' not 'currentTrack'
+                if (data.track) {
+                    const title = data.track.title || 'Unknown Track';
+                    const artist = data.track.artist || 'Unknown Artist';
                     
                     desktopTrackTitle.textContent = title;
                     desktopTrackArtist.textContent = artist;
                     mobileTrackTitle.textContent = title;
                     mobileTrackArtist.textContent = artist;
                     
-                    desktopModeBadge.textContent = data.station.mode || 'Playlist';
+                    desktopModeBadge.textContent = data.mode || 'Playlist';
                     desktopModeBadge.style.display = 'inline-block';
                 } else {
                     desktopTrackTitle.textContent = 'No track playing';
