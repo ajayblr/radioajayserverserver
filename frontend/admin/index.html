@@ -525,6 +525,17 @@
                         <button class="btn btn-secondary btn-small" onclick="saveLiveInput()">Save</button>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Live Broadcast Title</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" class="form-input" id="liveBroadcastTitle" placeholder="e.g., Morning Show, DJ Mix, Live Concert">
+                        <button class="btn btn-secondary btn-small" onclick="saveLiveBroadcastTitle()">Save</button>
+                    </div>
+                    <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">
+                        This will be displayed to listeners as "Now Playing" during live broadcasts
+                    </div>
+                </div>
             </div>
 
             <!-- Upload Section -->
@@ -996,6 +1007,25 @@
             }
         }
 
+        async function saveLiveBroadcastTitle() {
+            const title = document.getElementById('liveBroadcastTitle').value;
+            if (!title) return;
+
+            try {
+                await fetch('/api/admin/station/live-title', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ liveBroadcastTitle: title })
+                });
+                showSuccess('Live broadcast title saved');
+            } catch (err) {
+                console.error('Failed to save live broadcast title:', err);
+            }
+        }
+
         async function updateStatus() {
             try {
                 const response = await fetch('/api/admin/station/status', {
@@ -1014,6 +1044,11 @@
                 // Update live input URL
                 if (data.liveInputUrl) {
                     document.getElementById('liveInputUrl').value = data.liveInputUrl;
+                }
+
+                // Update live broadcast title
+                if (data.liveBroadcastTitle) {
+                    document.getElementById('liveBroadcastTitle').value = data.liveBroadcastTitle;
                 }
             } catch (err) {
                 console.error('Failed to update status:', err);

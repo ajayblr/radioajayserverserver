@@ -91,6 +91,26 @@ class StationController {
     }
   }
 
+  async setLiveBroadcastTitle(req, res) {
+    try {
+      const { liveBroadcastTitle } = req.body;
+
+      if (!liveBroadcastTitle) {
+        return res.status(400).json({ error: 'Live broadcast title is required' });
+      }
+
+      this.db.updateStationState({ liveBroadcastTitle });
+
+      res.json({ 
+        success: true,
+        liveBroadcastTitle
+      });
+    } catch (err) {
+      console.error('Set live broadcast title error:', err);
+      res.status(500).json({ error: 'Failed to set live broadcast title' });
+    }
+  }
+
   async getStatus(req, res) {
     try {
       const status = this.streamController.getStatus();
@@ -102,6 +122,7 @@ class StationController {
         lastError: status.lastError,
         hlsHealth: status.hlsHealth,
         liveInputUrl: state.live_input_url,
+        liveBroadcastTitle: state.live_broadcast_title,
         currentTrack: status.currentTrack
       });
     } catch (err) {

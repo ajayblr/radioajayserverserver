@@ -251,6 +251,23 @@ class StreamController {
   getCurrentlyPlaying() {
     const state = this.db.getStationState();
     
+    // If in live mode and has a live broadcast title, use that
+    if (state.mode === 'live' && state.live_broadcast_title) {
+      return {
+        station: 'RadioAjay',
+        mode: state.mode,
+        isOnline: Boolean(state.is_streaming),
+        track: {
+          id: 'live',
+          title: state.live_broadcast_title,
+          artist: 'Live Broadcast',
+          durationSec: 0
+        },
+        startedAt: this.trackStartTime
+      };
+    }
+    
+    // Otherwise return current track (playlist mode or live without title)
     return {
       station: 'RadioAjay',
       mode: state.mode,

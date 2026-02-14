@@ -47,6 +47,7 @@ class DatabaseService {
         id INTEGER PRIMARY KEY CHECK (id = 1),
         mode TEXT DEFAULT 'playlist' CHECK (mode IN ('playlist', 'live')),
         live_input_url TEXT,
+        live_broadcast_title TEXT,
         is_streaming INTEGER DEFAULT 0,
         last_error TEXT,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -76,6 +77,18 @@ class DatabaseService {
       if (!hasStartFromIndex) {
         this.db.prepare('ALTER TABLE playlist ADD COLUMN start_from_index INTEGER DEFAULT 0').run();
         console.log('✓ Added start_from_index column to playlist table');
+      }
+    } catch (err) {
+      console.log('Migration check:', err.message);
+    }
+
+    // Migration: Add live_broadcast_title column if it doesn't exist
+    try {
+      const stationInfo = this.db.prepare('PRAGMA table_info(station_state)').all();
+      const hasLiveBroadcastTitle = stationInfo.some(col => col.name === 'live_broadcast_title');
+      if (!hasLiveBroadcastTitle) {
+        this.db.prepare('ALTER TABLE station_state ADD COLUMN live_broadcast_title TEXT').run();
+        console.log('✓ Added live_broadcast_title column to station_state table');
       }
     } catch (err) {
       console.log('Migration check:', err.message);
@@ -162,6 +175,10 @@ class DatabaseService {
     if (updates.liveInputUrl !== undefined) {
       fields.push('live_input_url = ?');
       values.push(updates.liveInputUrl);
+    }
+    if (updates.liveBroadcastTitle !== undefined) {
+      fields.push('live_broadcast_title = ?');
+      values.push(updates.liveBroadcastTitle);
     }
     if (updates.isStreaming !== undefined) {
       fields.push('is_streaming = ?');

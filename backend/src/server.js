@@ -125,6 +125,7 @@ app.post('/api/admin/station/start', authMiddleware, stationController.startStat
 app.post('/api/admin/station/stop', authMiddleware, stationController.stopStation.bind(stationController));
 app.post('/api/admin/station/mode', authMiddleware, stationController.setMode.bind(stationController));
 app.put('/api/admin/station/live-input', authMiddleware, stationController.setLiveInput.bind(stationController));
+app.put('/api/admin/station/live-title', authMiddleware, stationController.setLiveBroadcastTitle.bind(stationController));
 app.get('/api/admin/station/status', authMiddleware, stationController.getStatus.bind(stationController));
 app.post('/api/admin/station/skip', authMiddleware, stationController.skipTrack.bind(stationController));
 
