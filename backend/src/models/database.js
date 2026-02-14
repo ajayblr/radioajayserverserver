@@ -31,6 +31,7 @@ class DatabaseService {
       CREATE TABLE IF NOT EXISTS playlist (
         id INTEGER PRIMARY KEY CHECK (id = 1),
         shuffle_enabled INTEGER DEFAULT 0,
+        start_from_index INTEGER DEFAULT 0,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -65,7 +66,19 @@ class DatabaseService {
     // Initialize default playlist and station_state if they don't exist
     const playlist = this.db.prepare('SELECT * FROM playlist WHERE id = 1').get();
     if (!playlist) {
-      this.db.prepare('INSERT INTO playlist (id, shuffle_enabled) VALUES (1, 0)').run();
+      this.db.prepare('INSERT INTO playlist (id, shuffle_enabled, start_from_index) VALUES (1, 0, 0)').run();
+    }
+
+    // Migration: Add start_from_index column if it doesn't exist
+    try {
+      const tableInfo = this.db.prepare('PRAGMA table_info(playlist)').all();
+      const hasStartFromIndex = tableInfo.some(col => col.name === 'start_from_index');
+      if (!hasStartFromIndex) {
+        this.db.prepare('ALTER TABLE playlist ADD COLUMN start_from_index INTEGER DEFAULT 0').run();
+        console.log('✓ Added start_from_index column to playlist table');
+      }
+    } catch (err) {
+      console.log('Migration check:', err.message);
     }
 
     const stationState = this.db.prepare('SELECT * FROM station_state WHERE id = 1').get();
@@ -109,11 +122,12 @@ class DatabaseService {
 
     return {
       shuffleEnabled: Boolean(playlist.shuffle_enabled),
+      startFromIndex: playlist.start_from_index || 0,
       tracks: items
     };
   }
 
-  updatePlaylist(trackIds, shuffleEnabled) {
+  updatePlaylist(trackIds, shuffleEnabled, startFromIndex = 0) {
     const updatePlaylist = this.db.transaction(() => {
       // Clear existing playlist items
       this.db.prepare('DELETE FROM playlist_items WHERE playlist_id = 1').run();
@@ -124,9 +138,9 @@ class DatabaseService {
         insert.run(trackId, index);
       });
 
-      // Update shuffle setting
-      this.db.prepare('UPDATE playlist SET shuffle_enabled = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1')
-        .run(shuffleEnabled ? 1 : 0);
+      // Update shuffle setting and start_from_index
+      this.db.prepare('UPDATE playlist SET shuffle_enabled = ?, start_from_index = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1')
+        .run(shuffleEnabled ? 1 : 0, startFromIndex);
     });
 
     updatePlaylist();

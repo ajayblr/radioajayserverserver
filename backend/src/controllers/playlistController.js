@@ -48,19 +48,20 @@ class PlaylistController {
 
       // Remove duplicates while preserving order
       const uniqueTrackIds = [...new Set(trackIds)];
+      const startIndex = startFromIndex !== undefined ? parseInt(startFromIndex) : 0;
 
-      this.db.updatePlaylist(uniqueTrackIds, Boolean(shuffleEnabled));
+      this.db.updatePlaylist(uniqueTrackIds, Boolean(shuffleEnabled), startIndex);
 
-      // Store startFromIndex if provided
-      if (startFromIndex !== undefined && startFromIndex >= 0) {
-        this.streamController.startFromIndex = parseInt(startFromIndex);
+      // Store startFromIndex in streamController
+      if (startIndex >= 0) {
+        this.streamController.startFromIndex = startIndex;
       }
 
       res.json({ 
         success: true,
         trackCount: uniqueTrackIds.length,
         shuffleEnabled: Boolean(shuffleEnabled),
-        startFromIndex: startFromIndex !== undefined ? parseInt(startFromIndex) : 0
+        startFromIndex: startIndex
       });
     } catch (err) {
       console.error('Update playlist error:', err);

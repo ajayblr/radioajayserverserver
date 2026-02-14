@@ -64,8 +64,9 @@ class StreamController {
       this.shuffleArray(this.playlistTracks);
     }
 
-    // Use startFromIndex if set, otherwise start from 0
-    this.currentTrackIndex = this.startFromIndex || 0;
+    // Use startFromIndex from database or from memory, default to 0
+    const startIndex = playlist.startFromIndex !== undefined ? playlist.startFromIndex : (this.startFromIndex || 0);
+    this.currentTrackIndex = startIndex;
     
     // Validate index is within bounds
     if (this.currentTrackIndex >= this.playlistTracks.length) {
