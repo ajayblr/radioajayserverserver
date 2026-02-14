@@ -9,6 +9,7 @@ class PlaylistController {
       
       const formatted = {
         shuffleEnabled: playlist.shuffleEnabled,
+        startFromIndex: playlist.startFromIndex || 0,
         tracks: playlist.tracks.map(track => ({
           id: track.track_id,
           position: track.position,

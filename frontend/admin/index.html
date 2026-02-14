@@ -704,6 +704,12 @@
                 const data = await response.json();
                 playlistTracks = data.tracks;
                 document.getElementById('shuffleCheckbox').checked = data.shuffleEnabled;
+                
+                // Load startFromIndex from backend
+                if (data.startFromIndex !== undefined) {
+                    localStorage.setItem('startFromIndex', data.startFromIndex.toString());
+                }
+                
                 renderPlaylist();
             } catch (err) {
                 console.error('Failed to load playlist:', err);
@@ -864,6 +870,7 @@
         function setStartFrom(index) {
             localStorage.setItem('startFromIndex', index.toString());
             renderPlaylist();
+            savePlaylist(); // Save to backend immediately
             showSuccess(`Playlist will start from track #${index + 1}`);
         }
 
