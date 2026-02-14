@@ -519,7 +519,10 @@
             <div class="section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div class="section-title" style="margin-bottom: 0;">Library</div>
-                    <button class="btn btn-danger" onclick="deleteAllLibrary()" style="padding: 6px 12px; font-size: 0.85em;">🗑️ Delete All</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-primary" onclick="addAllToPlaylist()" style="padding: 6px 12px; font-size: 0.85em;">➕ Add All to Playlist</button>
+                        <button class="btn btn-danger" onclick="deleteAllLibrary()" style="padding: 6px 12px; font-size: 0.85em;">🗑️ Delete All</button>
+                    </div>
                 </div>
                 <div class="track-list" id="libraryList">
                     <div class="empty-state">
@@ -708,6 +711,30 @@
                 playlistTracks.push(track);
                 renderPlaylist();
                 savePlaylist();
+            }
+        }
+
+        function addAllToPlaylist() {
+            if (libraryTracks.length === 0) {
+                alert('No tracks in library to add');
+                return;
+            }
+
+            let addedCount = 0;
+            libraryTracks.forEach(track => {
+                // Only add if not already in playlist (avoid duplicates)
+                if (!playlistTracks.find(t => t.id === track.id)) {
+                    playlistTracks.push(track);
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                renderPlaylist();
+                savePlaylist();
+                showSuccess(`Added ${addedCount} track${addedCount > 1 ? 's' : ''} to playlist`);
+            } else {
+                showSuccess('All tracks are already in the playlist');
             }
         }
 
