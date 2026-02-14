@@ -109,6 +109,46 @@ class StationController {
       res.status(500).json({ error: 'Failed to get status' });
     }
   }
+
+  async skipTrack(req, res) {
+    try {
+      const { direction } = req.query;
+
+      if (!['next', 'prev'].includes(direction)) {
+        return res.status(400).json({ error: 'Direction must be "next" or "prev"' });
+      }
+
+      const state = this.db.getStationState();
+      
+      // Only works in playlist mode
+      if (state.mode !== 'playlist') {
+        return res.status(400).json({ error: 'Skip only works in playlist mode' });
+      }
+
+      // Stop current track
+      await this.streamController.stop();
+
+      // Skip in the appropriate direction
+      if (direction === 'next') {
+        // Increment to next track
+        this.streamController.currentTrackIndex += 1;
+      } else {
+        // Go to previous track
+        this.streamController.currentTrackIndex -= 1;
+        if (this.streamController.currentTrackIndex < 0) {
+          this.streamController.currentTrackIndex = this.streamController.playlistTracks.length - 1;
+        }
+      }
+
+      // Start with new track
+      await this.streamController.start();
+
+      res.json({ success: true, message: `Skipped to ${direction} track` });
+    } catch (err) {
+      console.error('Skip track error:', err);
+      res.status(500).json({ error: 'Failed to skip track' });
+    }
+  }
 }
 
 module.exports = StationController;

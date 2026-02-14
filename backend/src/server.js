@@ -126,6 +126,7 @@ app.post('/api/admin/station/stop', authMiddleware, stationController.stopStatio
 app.post('/api/admin/station/mode', authMiddleware, stationController.setMode.bind(stationController));
 app.put('/api/admin/station/live-input', authMiddleware, stationController.setLiveInput.bind(stationController));
 app.get('/api/admin/station/status', authMiddleware, stationController.getStatus.bind(stationController));
+app.post('/api/admin/station/skip', authMiddleware, stationController.skipTrack.bind(stationController));
 
 // Health check
 app.get('/health', (req, res) => {
