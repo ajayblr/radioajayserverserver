@@ -28,7 +28,7 @@ class PlaylistController {
 
   async updatePlaylist(req, res) {
     try {
-      const { trackIds, shuffleEnabled } = req.body;
+      const { trackIds, shuffleEnabled, startFromIndex } = req.body;
 
       if (!Array.isArray(trackIds)) {
         return res.status(400).json({ error: 'trackIds must be an array' });
@@ -51,10 +51,16 @@ class PlaylistController {
 
       this.db.updatePlaylist(uniqueTrackIds, Boolean(shuffleEnabled));
 
+      // Store startFromIndex if provided
+      if (startFromIndex !== undefined && startFromIndex >= 0) {
+        this.streamController.startFromIndex = parseInt(startFromIndex);
+      }
+
       res.json({ 
         success: true,
         trackCount: uniqueTrackIds.length,
-        shuffleEnabled: Boolean(shuffleEnabled)
+        shuffleEnabled: Boolean(shuffleEnabled),
+        startFromIndex: startFromIndex !== undefined ? parseInt(startFromIndex) : 0
       });
     } catch (err) {
       console.error('Update playlist error:', err);

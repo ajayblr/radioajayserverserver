@@ -64,12 +64,19 @@ class StreamController {
       this.shuffleArray(this.playlistTracks);
     }
 
-    this.currentTrackIndex = 0;
+    // Use startFromIndex if set, otherwise start from 0
+    this.currentTrackIndex = this.startFromIndex || 0;
+    
+    // Validate index is within bounds
+    if (this.currentTrackIndex >= this.playlistTracks.length) {
+      this.currentTrackIndex = 0;
+    }
+    
     this.db.updateStationState({ isStreaming: true, lastError: null, mode: 'playlist' });
 
     this.playNextTrack();
     
-    console.log('✓ Playlist mode started');
+    console.log(`✓ Playlist mode started from track #${this.currentTrackIndex + 1}`);
     return { success: true };
   }
 

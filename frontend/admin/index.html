@@ -364,6 +364,35 @@
             opacity: 0.5;
         }
 
+        .playlist-sequence {
+            background: #e2e8f0;
+            color: #475569;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .playlist-sequence:hover {
+            background: #cbd5e1;
+            transform: scale(1.1);
+        }
+
+        .playlist-sequence.start-here {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+        }
+
         .drag-handle {
             cursor: move;
             color: #64748b;
@@ -520,8 +549,8 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div class="section-title" style="margin-bottom: 0;">Library</div>
                     <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-primary" onclick="addAllToPlaylist()" style="padding: 6px 12px; font-size: 0.85em;">➕ Add All to Playlist</button>
-                        <button class="btn btn-danger" onclick="deleteAllLibrary()" style="padding: 6px 12px; font-size: 0.85em;">🗑️ Delete All</button>
+                        <button class="btn btn-primary" onclick="addAllToPlaylist()" style="padding: 6px 12px; font-size: 0.85em; width: auto;">➕ Add All to Playlist</button>
+                        <button class="btn btn-danger" onclick="deleteAllLibrary()" style="padding: 6px 12px; font-size: 0.85em; width: auto;">🗑️ Delete All</button>
                     </div>
                 </div>
                 <div class="track-list" id="libraryList">
@@ -536,7 +565,7 @@
             <div class="section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <div class="section-title" style="margin-bottom: 0;">Playlist</div>
-                    <button class="btn btn-danger" onclick="clearPlaylist()" style="padding: 6px 12px; font-size: 0.85em;">🗑️ Clear All</button>
+                    <button class="btn btn-danger" onclick="clearPlaylist()" style="padding: 6px 12px; font-size: 0.85em; width: auto;">🗑️ Clear All</button>
                 </div>
                 <div class="checkbox-group">
                     <input type="checkbox" id="shuffleCheckbox" onchange="savePlaylist()">
@@ -689,9 +718,16 @@
                 return;
             }
 
+            const startFromIndex = parseInt(localStorage.getItem('startFromIndex') || '0');
+
             container.innerHTML = playlistTracks.map((track, index) => `
                 <div class="playlist-item" draggable="true" data-index="${index}">
-                    <div style="display: flex; align-items: center; flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                        <div class="playlist-sequence ${index === startFromIndex ? 'start-here' : ''}" 
+                             onclick="setStartFrom(${index})" 
+                             title="Click to start playback from this track">
+                            ${index + 1}
+                        </div>
                         <span class="drag-handle">☰</span>
                         <div class="track-info">
                             <div class="track-title">${escapeHtml(track.title)}</div>
@@ -812,14 +848,30 @@
 
         function removeFromPlaylist(index) {
             playlistTracks.splice(index, 1);
+            
+            // Adjust startFromIndex if needed
+            const startFromIndex = parseInt(localStorage.getItem('startFromIndex') || '0');
+            if (startFromIndex >= playlistTracks.length) {
+                localStorage.setItem('startFromIndex', '0');
+            } else if (index < startFromIndex) {
+                localStorage.setItem('startFromIndex', (startFromIndex - 1).toString());
+            }
+            
             renderPlaylist();
             savePlaylist();
+        }
+
+        function setStartFrom(index) {
+            localStorage.setItem('startFromIndex', index.toString());
+            renderPlaylist();
+            showSuccess(`Playlist will start from track #${index + 1}`);
         }
 
         async function savePlaylist() {
             try {
                 const trackIds = playlistTracks.map(t => t.id);
                 const shuffleEnabled = document.getElementById('shuffleCheckbox').checked;
+                const startFromIndex = parseInt(localStorage.getItem('startFromIndex') || '0');
 
                 await fetch('/api/admin/playlist', {
                     method: 'PUT',
@@ -827,7 +879,7 @@
                         'Authorization': `Bearer ${authToken}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ trackIds, shuffleEnabled })
+                    body: JSON.stringify({ trackIds, shuffleEnabled, startFromIndex })
                 });
 
                 showSuccess('Playlist saved');
