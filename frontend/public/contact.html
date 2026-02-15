@@ -19,21 +19,6 @@
             line-height: 1.6;
         }
 
-        .header {
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .logo-img {
-            height: 60px;
-            cursor: pointer;
-        }
-
         .container {
             max-width: 800px;
             margin: 40px auto;
@@ -167,12 +152,11 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <img src="/logo.png" alt="Radio Ajay" class="logo-img" onclick="window.location.href='/'">
-    </header>
-
     <div class="container">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/logo.png" alt="Radio Ajay" onclick="window.location.href='/'" style="max-width: 300px; cursor: pointer; margin: 0 auto; display: block;">
+        </div>
+        
         <h1>Contact Us</h1>
         <p class="subtitle">Get in touch with Radio Ajay - We'd love to hear from you!</p>
 
@@ -200,62 +184,6 @@
                 </button>
                 <div id="formMessage" style="margin-top: 15px; padding: 12px; border-radius: 8px; display: none;"></div>
             </form>
-        </div>
-
-        <div class="contact-section">
-            <h2>General Inquiries</h2>
-            <div class="contact-item">
-                <div class="contact-icon">📧</div>
-                <div class="contact-info">
-                    <div class="contact-label">Email</div>
-                    <div class="contact-value">
-                        <a href="/cdn-cgi/l/email-protection#0861666e6748696269717a696c6167266b6765"><span class="__cf_email__" data-cfemail="036a6d656c436269627a7162676a6c2d606c6e">[email&#160;protected]</span></a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="contact-item">
-                <div class="contact-icon">📱</div>
-                <div class="contact-info">
-                    <div class="contact-label">Phone</div>
-                    <div class="contact-value">
-                        <a href="tel:+1234567890">+1 (234) 567-890</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="contact-section">
-            <h2>Social Media</h2>
-            <div class="contact-item">
-                <div class="contact-icon">📘</div>
-                <div class="contact-info">
-                    <div class="contact-label">Facebook</div>
-                    <div class="contact-value">
-                        <a href="https://facebook.com/radioajay" target="_blank">facebook.com/radioajay</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="contact-item">
-                <div class="contact-icon">🐦</div>
-                <div class="contact-info">
-                    <div class="contact-label">Twitter</div>
-                    <div class="contact-value">
-                        <a href="https://twitter.com/radioajay" target="_blank">@radioajay</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="contact-item">
-                <div class="contact-icon">📸</div>
-                <div class="contact-info">
-                    <div class="contact-label">Instagram</div>
-                    <div class="contact-value">
-                        <a href="https://instagram.com/radioajay" target="_blank">@radioajay</a>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="contact-section">
