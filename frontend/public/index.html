@@ -623,7 +623,6 @@
                 © 2026 Radio Ajay. Broadcasting quality music 24/7.
                 <br>
                 <a href="/contact.html" class="footer-link">Contact</a>
-                <a href="/privacy.html" class="footer-link">Privacy</a>
             </div>
         </footer>
     </div>
@@ -861,30 +860,15 @@
 
         async function updateUpcoming() {
             try {
-                const response = await fetch('/api/admin/playlist', {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken') || ''}` }
-                });
-                
-                if (!response.ok) {
-                    // If not authenticated, fetch recently played instead
-                    const recentResponse = await fetch('/api/recently-played?limit=10');
-                    const recentData = await recentResponse.json();
-                    
-                    if (recentData.tracks && recentData.tracks.length > 0) {
-                        playlistTracks = recentData.tracks.reverse();
-                        renderUpcoming(playlistTracks, true);
-                    } else {
-                        upcomingList.innerHTML = '<div class="loading">No recent tracks</div>';
-                    }
-                    return;
-                }
-
+                // Use the new /api/upcoming endpoint that returns next tracks from current position
+                const response = await fetch('/api/upcoming?limit=10');
                 const data = await response.json();
+                
                 if (data.tracks && data.tracks.length > 0) {
-                    playlistTracks = data.tracks.slice(0, 10);
-                    renderUpcoming(playlistTracks, false);
+                    playlistTracks = data.tracks;
+                    renderUpcoming(playlistTracks);
                 } else {
-                    upcomingList.innerHTML = '<div class="loading">Playlist is empty</div>';
+                    upcomingList.innerHTML = '<div class="loading">No upcoming tracks</div>';
                 }
             } catch (err) {
                 console.error('Failed to fetch upcoming:', err);
@@ -892,9 +876,9 @@
             }
         }
 
-        function renderUpcoming(tracks, isRecent) {
+        function renderUpcoming(tracks) {
             upcomingList.innerHTML = tracks.map((track, index) => {
-                const isCurrentTrack = currentTrackId && track.id === currentTrackId;
+                const isCurrentTrack = track.isCurrent || (currentTrackId && track.id === currentTrackId);
                 return `
                     <div class="upcoming-item ${isCurrentTrack ? 'now-playing' : ''}" id="track-${track.id}">
                         <div class="track-number">${index + 1}</div>
@@ -906,15 +890,13 @@
                 `;
             }).join('');
 
-            // Auto-scroll to currently playing track
-            if (currentTrackId) {
-                setTimeout(() => {
-                    const currentElement = document.getElementById(`track-${currentTrackId}`);
-                    if (currentElement) {
-                        currentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
-            }
+            // Auto-scroll to currently playing track (first one)
+            setTimeout(() => {
+                const currentElement = document.querySelector('.upcoming-item.now-playing');
+                if (currentElement) {
+                    currentElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
         }
 
         function escapeHtml(text) {

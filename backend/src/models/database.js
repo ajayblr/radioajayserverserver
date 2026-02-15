@@ -28,29 +28,46 @@ class DatabaseService {
         uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
-      CREATE TABLE IF NOT EXISTS playlist (
-        id INTEGER PRIMARY KEY CHECK (id = 1),
+      CREATE TABLE IF NOT EXISTS playlists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
         shuffle_enabled INTEGER DEFAULT 0,
         start_from_index INTEGER DEFAULT 0,
+        is_active INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE TABLE IF NOT EXISTS playlist_items (
-        playlist_id INTEGER DEFAULT 1,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        playlist_id INTEGER NOT NULL,
         track_id TEXT NOT NULL,
         position INTEGER NOT NULL,
-        PRIMARY KEY (playlist_id, track_id),
+        UNIQUE(playlist_id, track_id),
+        FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
         FOREIGN KEY (track_id) REFERENCES tracks(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS playlist_schedules (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        playlist_id INTEGER NOT NULL,
+        days_of_week TEXT NOT NULL,
+        start_time TEXT NOT NULL,
+        end_time TEXT NOT NULL,
+        enabled INTEGER DEFAULT 1,
+        FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE
       );
 
       CREATE TABLE IF NOT EXISTS station_state (
         id INTEGER PRIMARY KEY CHECK (id = 1),
         mode TEXT DEFAULT 'playlist' CHECK (mode IN ('playlist', 'live')),
+        active_playlist_id INTEGER,
         live_input_url TEXT,
         live_broadcast_title TEXT,
         is_streaming INTEGER DEFAULT 0,
         last_error TEXT,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (active_playlist_id) REFERENCES playlists(id)
       );
 
       CREATE TABLE IF NOT EXISTS recently_played (
@@ -60,8 +77,21 @@ class DatabaseService {
         FOREIGN KEY (track_id) REFERENCES tracks(id) ON DELETE CASCADE
       );
 
+      CREATE TABLE IF NOT EXISTS contact_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        subject TEXT NOT NULL,
+        message TEXT NOT NULL,
+        is_read INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE INDEX IF NOT EXISTS idx_recently_played_date ON recently_played(played_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_contact_messages_date ON contact_messages(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_contact_messages_read ON contact_messages(is_read);
       CREATE INDEX IF NOT EXISTS idx_playlist_items_position ON playlist_items(playlist_id, position);
+      CREATE INDEX IF NOT EXISTS idx_playlist_schedules_enabled ON playlist_schedules(enabled);
     `);
 
     // Initialize default playlist and station_state if they don't exist
@@ -216,6 +246,31 @@ class DatabaseService {
       ORDER BY rp.played_at DESC
       LIMIT ?
     `).all(limit);
+  }
+
+  // Contact message operations
+  addContactMessage(contact) {
+    return this.db.prepare(`
+      INSERT INTO contact_messages (name, email, subject, message)
+      VALUES (?, ?, ?, ?)
+    `).run(contact.name, contact.email, contact.subject, contact.message);
+  }
+
+  getAllContactMessages() {
+    return this.db.prepare(`
+      SELECT * FROM contact_messages
+      ORDER BY created_at DESC
+    `).all();
+  }
+
+  markContactMessageRead(id) {
+    return this.db.prepare(`
+      UPDATE contact_messages SET is_read = 1 WHERE id = ?
+    `).run(id);
+  }
+
+  deleteContactMessage(id) {
+    return this.db.prepare('DELETE FROM contact_messages WHERE id = ?').run(id);
   }
 
   close() {

@@ -16,6 +16,7 @@ const TracksController = require('./controllers/tracksController');
 const PlaylistController = require('./controllers/playlistController');
 const StationController = require('./controllers/stationController');
 const PublicController = require('./controllers/publicController');
+const ContactController = require('./controllers/contactController');
 
 // Middleware
 const authMiddleware = require('./middleware/auth');
@@ -48,6 +49,7 @@ const tracksController = new TracksController(db, config);
 const playlistController = new PlaylistController(db);
 const stationController = new StationController(db, streamController);
 const publicController = new PublicController(db, streamController);
+const contactController = new ContactController(db);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -105,11 +107,18 @@ app.use('/admin', express.static(path.join(__dirname, '../frontend/admin')));
 // Public API routes
 app.get('/api/now-playing', publicController.getNowPlaying.bind(publicController));
 app.get('/api/recently-played', publicController.getRecentlyPlayed.bind(publicController));
+app.get('/api/upcoming', publicController.getUpcoming.bind(publicController));
+app.post('/api/contact', contactController.submitContact.bind(contactController));
 
 // Auth routes
 app.post('/api/admin/login', authController.login.bind(authController));
 app.post('/api/admin/logout', authMiddleware, authController.logout.bind(authController));
 app.get('/api/admin/verify', authMiddleware, authController.verify.bind(authController));
+
+// Admin routes - Contact messages
+app.get('/api/admin/contact-messages', authMiddleware, contactController.getMessages.bind(contactController));
+app.put('/api/admin/contact-messages/:id/read', authMiddleware, contactController.markAsRead.bind(contactController));
+app.delete('/api/admin/contact-messages/:id', authMiddleware, contactController.deleteMessage.bind(contactController));
 
 // Admin routes - Track management
 app.post('/api/admin/upload', authMiddleware, upload.array('tracks'), tracksController.uploadTracks.bind(tracksController));

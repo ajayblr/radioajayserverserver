@@ -177,13 +177,39 @@
         <p class="subtitle">Get in touch with Radio Ajay - We'd love to hear from you!</p>
 
         <div class="contact-section">
+            <h2>Send Us a Message</h2>
+            <form id="contactForm" style="margin-top: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #374151; font-weight: 500;">Name</label>
+                    <input type="text" id="contactName" required style="width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #374151; font-weight: 500;">Email</label>
+                    <input type="email" id="contactEmail" required style="width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #374151; font-weight: 500;">Subject</label>
+                    <input type="text" id="contactSubject" required style="width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; color: #374151; font-weight: 500;">Message</label>
+                    <textarea id="contactMessage" required rows="5" style="width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+                </div>
+                <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%); color: white; border: none; border-radius: 10px; font-weight: 600; font-size: 16px; cursor: pointer;">
+                    Send Message
+                </button>
+                <div id="formMessage" style="margin-top: 15px; padding: 12px; border-radius: 8px; display: none;"></div>
+            </form>
+        </div>
+
+        <div class="contact-section">
             <h2>General Inquiries</h2>
             <div class="contact-item">
                 <div class="contact-icon">📧</div>
                 <div class="contact-info">
                     <div class="contact-label">Email</div>
                     <div class="contact-value">
-                        <a href="/cdn-cgi/l/email-protection#6b02050d042b0a010a12190a0f020445080406"><span class="__cf_email__" data-cfemail="3c55525a537c5d565d454e5d585553125f5351">[email&#160;protected]</span></a>
+                        <a href="/cdn-cgi/l/email-protection#0861666e6748696269717a696c6167266b6765"><span class="__cf_email__" data-cfemail="036a6d656c436269627a7162676a6c2d606c6e">[email&#160;protected]</span></a>
                     </div>
                 </div>
             </div>
@@ -260,4 +286,48 @@
         <div class="footer-text">
             © 2026 Radio Ajay. Broadcasting quality music 24/7.
             <br>
-            <a href="/contact.html" class="foote
+            <a href="/contact.html" class="footer-link">Contact</a>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('contactName').value,
+                email: document.getElementById('contactEmail').value,
+                subject: document.getElementById('contactSubject').value,
+                message: document.getElementById('contactMessage').value
+            };
+
+            const messageDiv = document.getElementById('formMessage');
+            
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.background = '#d1fae5';
+                    messageDiv.style.color = '#065f46';
+                    messageDiv.style.border = '1px solid #6ee7b7';
+                    messageDiv.textContent = '✓ Message sent successfully! We\'ll get back to you soon.';
+                    document.getElementById('contactForm').reset();
+                } else {
+                    throw new Error('Failed to send message');
+                }
+            } catch (err) {
+                messageDiv.style.display = 'block';
+                messageDiv.style.background = '#fee2e2';
+                messageDiv.style.color = '#991b1b';
+                messageDiv.style.border = '1px solid #fca5a5';
+                messageDiv.textContent = '✗ Failed to send message. Please try again.';
+            }
+        });
+    </script>
+</body>
+</html>

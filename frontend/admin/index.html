@@ -421,6 +421,80 @@
             display: none;
         }
 
+        .contact-message-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .contact-message-item.unread {
+            background: #fef3c7;
+            border-color: #fbbf24;
+        }
+
+        .contact-message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .contact-message-info h4 {
+            margin: 0 0 5px 0;
+            color: #111827;
+            font-size: 16px;
+        }
+
+        .contact-message-meta {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .contact-message-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-contact {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-mark-read {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-mark-read:hover {
+            background: #16a34a;
+        }
+
+        .btn-delete-msg {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete-msg:hover {
+            background: #dc2626;
+        }
+
+        .contact-message-body {
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            color: #374151;
+            line-height: 1.6;
+        }
+
         .empty-state {
             text-align: center;
             padding: 40px;
@@ -592,6 +666,20 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Contact Messages -->
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div class="section-title" style="margin-bottom: 0;">Contact Messages</div>
+                    <span id="unreadCount" style="background: #dc2626; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: 600;">0 new</span>
+                </div>
+                <div id="contactMessagesList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📧</div>
+                        <div>No messages yet</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -671,6 +759,7 @@
             await Promise.all([
                 loadLibrary(),
                 loadPlaylist(),
+                loadContactMessages(),
                 updateStatus()
             ]);
         }
@@ -685,6 +774,77 @@
                 renderLibrary();
             } catch (err) {
                 console.error('Failed to load library:', err);
+            }
+        }
+
+        async function loadContactMessages() {
+            try {
+                const response = await fetch('/api/admin/contact-messages', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                renderContactMessages(data.messages);
+            } catch (err) {
+                console.error('Failed to load contact messages:', err);
+            }
+        }
+
+        function renderContactMessages(messages) {
+            const container = document.getElementById('contactMessagesList');
+            const unreadCount = messages.filter(m => !m.is_read).length;
+            
+            document.getElementById('unreadCount').textContent = unreadCount > 0 ? `${unreadCount} new` : '0 new';
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📧</div><div>No messages yet</div></div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => `
+                <div class="contact-message-item ${!msg.is_read ? 'unread' : ''}">
+                    <div class="contact-message-header">
+                        <div class="contact-message-info">
+                            <h4>${escapeHtml(msg.subject)}</h4>
+                            <div class="contact-message-meta">
+                                From: ${escapeHtml(msg.name)} (${escapeHtml(msg.email)}) • 
+                                ${new Date(msg.created_at).toLocaleString()}
+                                ${!msg.is_read ? '<span style="color: #dc2626; font-weight: 600;"> • UNREAD</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="contact-message-actions">
+                            ${!msg.is_read ? `<button class="btn-contact btn-mark-read" onclick="markMessageRead(${msg.id})">✓ Mark Read</button>` : ''}
+                            <button class="btn-contact btn-delete-msg" onclick="deleteContactMessage(${msg.id})">🗑️ Delete</button>
+                        </div>
+                    </div>
+                    <div class="contact-message-body">${escapeHtml(msg.message)}</div>
+                </div>
+            `).join('');
+        }
+
+        async function markMessageRead(id) {
+            try {
+                await fetch(`/api/admin/contact-messages/${id}/read`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                loadContactMessages();
+            } catch (err) {
+                console.error('Failed to mark message as read:', err);
+            }
+        }
+
+        async function deleteContactMessage(id) {
+            if (!confirm('Delete this message?')) return;
+            
+            try {
+                await fetch(`/api/admin/contact-messages/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                showSuccess('Message deleted');
+                loadContactMessages();
+            } catch (err) {
+                console.error('Failed to delete message:', err);
             }
         }
 
