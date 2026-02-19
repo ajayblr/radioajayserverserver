@@ -73,7 +73,8 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 100 * 1024 * 1024 // 100MB max
+    fileSize: 100 * 1024 * 1024, // 100MB per file
+    files: 100 // Allow up to 100 files at once
   }
 });
 
@@ -85,8 +86,8 @@ app.use(cors({
   origin: config.CORS_ORIGIN,
   credentials: true 
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '500mb' })); // Increase JSON body limit
+app.use(express.urlencoded({ extended: true, limit: '500mb' })); // Increase URL-encoded body limit
 app.use(cookieParser());
 
 // Serve HLS stream

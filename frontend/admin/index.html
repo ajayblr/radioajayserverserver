@@ -1087,6 +1087,9 @@
 
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
+                
+                // Set timeout to 10 minutes for large uploads
+                xhr.timeout = 600000; // 10 minutes in milliseconds
 
                 // Track upload progress
                 xhr.upload.addEventListener('progress', (e) => {
@@ -1109,24 +1112,43 @@
                             progressBar.style.width = '0%';
                             progressText.textContent = '0%';
                         }, 1500);
+                        document.getElementById('fileInput').value = '';
                         resolve();
                     } else {
-                        reject(new Error('Upload failed'));
+                        progress.style.display = 'none';
+                        document.getElementById('fileInput').value = '';
+                        let errorMsg = 'Upload failed';
+                        try {
+                            const errorData = JSON.parse(xhr.responseText);
+                            errorMsg = errorData.error || errorMsg;
+                        } catch (e) {
+                            // Can't parse error, use default
+                        }
+                        alert(`Upload failed: ${errorMsg}`);
+                        reject(new Error(errorMsg));
                     }
                 });
 
                 xhr.addEventListener('error', () => {
-                    console.error('Upload failed');
+                    console.error('Upload failed - network error');
                     progress.style.display = 'none';
+                    document.getElementById('fileInput').value = '';
+                    alert('Upload failed: Network error. Files may be too large or connection timed out.');
                     reject(new Error('Upload failed'));
+                });
+
+                xhr.addEventListener('timeout', () => {
+                    console.error('Upload timeout');
+                    progress.style.display = 'none';
+                    document.getElementById('fileInput').value = '';
+                    alert('Upload timed out. Try uploading fewer files at once.');
+                    reject(new Error('Upload timeout'));
                 });
 
                 xhr.open('POST', '/api/admin/upload');
                 xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
                 xhr.send(formData);
             });
-
-            document.getElementById('fileInput').value = '';
         }
 
         async function startStation() {
