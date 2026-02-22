@@ -1,0 +1,24 @@
+[Unit]
+Description=Radio Ajay Streaming Server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/radioajay
+ExecStart=/usr/bin/docker compose up
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Resource limits to prevent CPU spikes
+CPUQuota=80%
+MemoryLimit=400M
+
+# Automatic restart on failure
+StartLimitInterval=600
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target

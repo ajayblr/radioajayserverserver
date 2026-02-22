@@ -118,22 +118,25 @@ class StreamController {
       '-i', inputPath,
       '-vn', // No video
       '-c:a', 'aac',
-      '-b:a', '128k',
+      '-b:a', '96k', // REDUCED from 128k to 96k for lower CPU
       '-ar', '44100',
       '-ac', '2', // Stereo
+      '-threads', '1', // LIMIT to 1 thread to reduce CPU spikes
       '-err_detect', 'ignore_err', // Ignore minor errors
       '-f', 'hls',
-      '-hls_time', '6', // Longer segments = less gaps
-      '-hls_list_size', '10', // Keep more segments
+      '-hls_time', '10', // INCREASED from 6 to 10 - longer segments = less CPU
+      '-hls_list_size', '6', // REDUCED from 10 to 6 - less memory
       '-hls_flags', 'delete_segments+append_list+omit_endlist',
       '-hls_segment_filename', path.join(this.config.HLS_DIR, 'segment_%03d.ts'),
       hlsPath
     ];
 
-    this.ffmpegProcess = spawn('ffmpeg', args);
+    this.ffmpegProcess = spawn('ffmpeg', args, {
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
 
     this.ffmpegProcess.stdout.on('data', (data) => {
-      // console.log(`FFmpeg: ${data}`);
+      // Suppress output to reduce overhead
     });
 
     this.ffmpegProcess.stderr.on('data', (data) => {
@@ -147,6 +150,21 @@ class StreamController {
       console.log(`FFmpeg process exited with code ${code}`);
       
       const state = this.db.getStationState();
+      
+      // AUTO-RECOVERY: If unexpected exit and still supposed to be streaming, restart
+      if (code !== 0 && state.is_streaming) {
+        console.log('⚠️ FFmpeg crashed unexpectedly. Auto-recovering in 2 seconds...');
+        setTimeout(() => {
+          if (state.mode === 'live') {
+            console.log('🔄 Attempting to restart live stream...');
+            this.startLiveMode();
+          } else {
+            console.log('🔄 Attempting to continue playlist...');
+            this.playNextTrack();
+          }
+        }, 2000);
+        return;
+      }
       
       if (code !== 0 && state.mode === 'live') {
         console.log('Live stream failed, falling back to playlist mode');
@@ -165,11 +183,17 @@ class StreamController {
     });
 
     this.ffmpegProcess.on('error', (err) => {
-      console.error('Failed to start FFmpeg:', err);
+      console.error('❌ Failed to start FFmpeg:', err);
       this.db.updateStationState({ 
         isStreaming: false, 
         lastError: `FFmpeg error: ${err.message}` 
       });
+      
+      // AUTO-RECOVERY: Try to restart after error
+      console.log('🔄 Auto-recovery: Restarting stream in 5 seconds...');
+      setTimeout(() => {
+        this.start();
+      }, 5000);
     });
   }
 

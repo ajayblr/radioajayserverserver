@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 // Services and models
 const DatabaseService = require('./models/database');
 const StreamController = require('./services/streamController');
+const HealthMonitor = require('./services/healthMonitor');
 
 // Controllers
 const AuthController = require('./controllers/authController');
@@ -42,6 +43,10 @@ const config = {
 // Initialize database and services
 const db = new DatabaseService(config.DB_PATH);
 const streamController = new StreamController(db, config);
+const healthMonitor = new HealthMonitor(db, streamController);
+
+// Start health monitor
+healthMonitor.start();
 
 // Initialize controllers
 const authController = new AuthController();
@@ -182,6 +187,7 @@ app.listen(config.PORT, () => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received, shutting down gracefully...');
+  healthMonitor.stop();
   streamController.stop();
   db.close();
   process.exit(0);
@@ -189,7 +195,19 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   console.log('SIGINT received, shutting down gracefully...');
+  healthMonitor.stop();
   streamController.stop();
   db.close();
   process.exit(0);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+  // Don't exit - let health monitor handle recovery
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit - let health monitor handle recovery
 });
